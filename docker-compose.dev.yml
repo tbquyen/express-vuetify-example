@@ -1,0 +1,68 @@
+version: "3.2"
+services:
+    web-frontend:
+        image: node:14.3.0-stretch-slim
+        container_name: web-frontend
+        tty: true
+        user: node
+        volumes:
+            - ./frontend:/home/frontend/
+        working_dir: /home/frontend/
+        ports:
+            - 8080:8080
+        networks:
+            - web-webnet
+        depends_on:
+            - web-backend
+            - web-mongodb
+
+    web-backend:
+        image: node:14.3.0-stretch-slim
+        container_name: web-backend
+        tty: true
+        user: node
+        volumes:
+            - ./backend:/home/backend/
+        working_dir: /home/backend/
+        ports:
+            - 3000:3000
+        networks:
+            - web-webnet
+        depends_on:
+            - web-mongodb
+
+    web-mongodb:
+        image: mongo:4.2.6-bionic
+        container_name: web-mongodb
+        volumes:
+            - ./mongodb/data:/data/db
+            - ./mongodb/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+        env_file: .env
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+            MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+        ports:
+            - 27017:27017
+        networks:
+            - web-webnet
+
+    web-mongo-express:
+        image: mongo-express:0.54.0
+        container_name: web-mongo-express
+        env_file: .env
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+            ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+            ME_CONFIG_MONGODB_SERVER: web-mongodb
+            ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+            ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+        ports:
+            - 8081:8081
+        networks:
+            - web-webnet
+        depends_on:
+            - web-mongodb
+
+networks:
+    web-webnet:
