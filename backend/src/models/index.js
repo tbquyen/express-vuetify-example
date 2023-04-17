@@ -7,7 +7,7 @@ mongoose.set("debug", (collectionName, method, query, options) => {
 
 const db = {};
 db.Logs = (data) => {
-    log.debug(`result: ${JSON.stringify(data)});
+    log.debug(`result: ${JSON.stringify(data)}`);
 };
 
 db.mongoose = mongoose;
